@@ -3,6 +3,7 @@
 obj
 bin
 Debug
-Release
 XmlDocs
 HtmlDocs
+Build/Release/Machine.Specifications.dll
+Build/Release/Requestor.Specs.*
