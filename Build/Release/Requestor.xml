@@ -4,7 +4,7 @@
         <name>obj/Release/Requestor</name>
     </assembly>
     <members>
-        <member name="T:Requestor.HttpRequestor">
+        <member name="T:Requestoring.HttpRequestor">
             <summary>
                 <c>IRequestor</c> implementation that uses real HTTP via <c>System.Net.HttpWebRequest</c></summary>
             <remarks>
@@ -15,27 +15,27 @@
             created that ASP.NET can run on top off, and we can make an <c>IRequestor</c> using that.
             </remarks>
         </member>
-        <member name="T:Requestor.IRequestor">
+        <member name="T:Requestoring.IRequestor">
             <summary>
             All Requestors must implement this simple, single method interface
             </summary>
         </member>
-        <member name="T:Requestor.Requestor">
+        <member name="T:Requestoring.Requestor">
             <summary>
                 <c>Requestor</c> has the main API for making requests.  Uses a <c>IRequestor</c> implementation behind the scenes.
             </summary>
         </member>
-        <member name="M:Requestor.Requestor.#ctor">
+        <member name="M:Requestoring.Requestor.#ctor">
             <summary>Empty constructor</summary>
         </member>
-        <member name="T:Requestor.IResponse">
+        <member name="T:Requestoring.IResponse">
             <summary>
             Represents a simple HTTP response
             </summary>
             <remarks>
             Nearly all of the <c>Requestor</c> and <c>IRequestor</c> methods return an <c>IResponse</c></remarks>
         </member>
-        <member name="T:Requestor.Response">
+        <member name="T:Requestoring.Response">
             <summary>
             Default, simple implementation of <c>IResponse</c></summary>
             <remarks>
@@ -45,7 +45,7 @@
             to return a dumb struct-like object, such as this.
             </remarks>
         </member>
-        <member name="T:Requestor.Vars">
+        <member name="T:Requestoring.Vars">
             <summary>
             Short alias to ...
             </summary>

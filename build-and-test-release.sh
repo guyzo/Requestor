@@ -1,4 +1,4 @@
 #! /bin/bash
 rm -rf Build
 xbuild /p:Configuration=Release
-Tools/mspec.exe Build/Release/Requestor.Specs.dll
+MSPEC_PATH=Tools/mspec.exe Tools/mspec-color.exe Build/Release/Requestor.Specs.dll
