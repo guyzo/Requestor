@@ -18,7 +18,7 @@ to be able to make my existing Requestor specs run against this new interface by
 Download
 --------
 
-Latest version: 1.0.0.0
+Latest version: 1.0.1.0
 
 [Download .dll][]
 
@@ -72,6 +72,11 @@ You can easily pass POST variables when doing a POST:
     // this will POST to / with Foo=Bar&Hi=There as POST data
     Post("/", new { Foo = "Bar", Hi = "There" });
 
+You can post a simple string too:
+
+    // this will POST to / with "I might be some JSON or XML" as POST data
+    Post("/", "I might be some JSON or XML");
+
 If you want to use query strings too, you can *explicitly* pass a group of query strings:
 
     // this will POST to /?query=string with Foo=Bar&Hi=There as POST data
@@ -118,6 +123,10 @@ This should work with ASP.NET MVC.
 If you need to change the name of this variable to something else (eg. Ruby on Rails uses `_method`), this is configurable:
 
     HttpRequestor.MethodVariable = "_method";
+
+If you want to disable this and not POST any special variable:
+
+    HttpRequestor.MethodVariable = null;
 
 ### Sessions / Cookies
 
@@ -210,11 +219,13 @@ Requestor is released under the MIT license.
 TODO
 ----
 
- - Add support for Put/Delete to set the REQUEST_METHOD header instead of passing along an extra POST variable (depends on framework)
+ - *CRITICAL* add the ability to set all Headers that are restricted but may be set by properties
+ - Add the ability to set default headers ... for different kinds of requests?  ... for all types of requests?
  - Set default Headers/PostData/QueryStrings that will go out on every request (unless set to null or overriden) - some web APIs will require an Auth token header for EVERY request.
  - Add (extension?) methods for easily sending/receiving JSON and XML data ... may or may not be useful.  I will add this if I find it to be useful.
  - Add some more specs to try testing edge cases.
  - Make the specs easy to run.  As it is now, you need to manually boot up the Ruby Rack application found in the Specs directory
+ - Require .NET 4.0 or add extensions to extend for 4.0.  If we had Named Arguments, we could write cleaner code, eg. `Get("/", headers: new { ContentType="application/json" });`
 
 [merb]: http://www.merbivore.com/
 [rack-test]: https://github.com/brynary/rack-test
@@ -226,5 +237,5 @@ TODO
 [specs]: http://github.com/remi/Requestor/tree/master/Specs
 [psgi]: http://plackperl.org/
 
-[Download .dll]: http://github.com/remi/Requestor/raw/1.0.0.0/Build/Release/Requestor.dll
-[Browse Source]: http://github.com/remi/Requestor/tree/1.0.0.0
+[Download .dll]: http://github.com/remi/Requestor/raw/1.0.1.0/Build/Release/Requestor.dll
+[Browse Source]: http://github.com/remi/Requestor/tree/1.0.1.0
