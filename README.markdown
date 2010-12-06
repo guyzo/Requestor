@@ -10,6 +10,11 @@ Once this is working, we will create an adapter (IRequestor) that can support th
 write tests that run against real HTTP *or* you can use Requestor to make "mock" requests against your ASP.NET web application (or any other .NET 
 web framework).
 
+At the moment, Requestor is just an abstraction layer around `System.Net.HttpWebRequest`.  Once a .NET web server gateway interface is working, I hope 
+to be able to make my existing Requestor specs run against this new interface by simply swapping our the driver I'm using!
+
+**NOTE**: The current focus of Requestor is on *testing*.
+
 Download
 --------
 
@@ -24,7 +29,7 @@ Usage
 
 The Requestor API is very simple.  It's based on the HTTP method you wish to perform on a given URL.
 
-    using Requestor;
+    using Requestoring; // silly namespace name, so you don't have to say Requestor.Requestor in your code
 
     var request  = new Requestor("http://localhost:1234"); // you can (optionally) pass a RootUrl, as we're doing here
     var response = request.Get("/");
@@ -34,6 +39,8 @@ Response is a Requestor.IResponse and it has:
  - `int` Status
  - `string` Body
  - `IDictionary<string,string>` Headers
+
+For example:
 
     Console.WriteLine(response.Status);
     200
@@ -200,6 +207,15 @@ License
 
 Requestor is released under the MIT license.
 
+TODO
+----
+
+ - Add support for Put/Delete to set the REQUEST_METHOD header instead of passing along an extra POST variable (depends on framework)
+ - Set default Headers/PostData/QueryStrings that will go out on every request (unless set to null or overriden) - some web APIs will require an Auth token header for EVERY request.
+ - Add (extension?) methods for easily sending/receiving JSON and XML data ... may or may not be useful.  I will add this if I find it to be useful.
+ - Add some more specs to try testing edge cases.
+ - Make the specs easy to run.  As it is now, you need to manually boot up the Ruby Rack application found in the Specs directory
+
 [merb]: http://www.merbivore.com/
 [rack-test]: https://github.com/brynary/rack-test
 [owin]: http://groups.google.com/group/net-http-abstractions
@@ -208,6 +224,7 @@ Requestor is released under the MIT license.
 [jsgi]: http://jackjs.org/
 [mspec]: https://github.com/machine/machine.specifications
 [specs]: http://github.com/remi/Requestor/tree/master/Specs
+[psgi]: http://plackperl.org/
 
 [Download .dll]: http://github.com/remi/Requestor/raw/1.0.0.0/Build/Release/Requestor.dll
 [Browse Source]: http://github.com/remi/Requestor/tree/1.0.0.0

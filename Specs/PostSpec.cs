@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Machine.Specifications;
-using Requestor;
+using Requestoring;
 
-namespace Requestor.Specs {
+namespace Requestoring.Specs {
 
     [Subject(typeof(Requestor))]
     public class Post : Spec {
@@ -15,6 +15,11 @@ namespace Requestor.Specs {
 	It can_post_a_variable =()=> {
 	    Post("/info").Body.ShouldNotContain("foo ... bar");
 	    Post("/info", new { foo="bar" }).Body.ShouldContain("POST Variable: foo = bar");
+	};
+
+	It can_post_a_string =()=> {
+	    var json = "{\"Name\":\"Lander\",\"Breed\":\"APBT\"}";
+	    Post("/info", json).Body.ShouldContain("POST Variable: " + json + " = "); // data shows up as a key with no value on the server
 	};
 
 	It can_post_multiple_variables =()=> {
