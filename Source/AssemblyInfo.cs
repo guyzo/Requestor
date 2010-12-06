@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyVersion("1.0.1.1")]
+[assembly: AssemblyVersion("1.0.1.2")]
 
 [assembly: AssemblyTitle("Requestor")]
 [assembly: AssemblyProduct("Requestor")]
