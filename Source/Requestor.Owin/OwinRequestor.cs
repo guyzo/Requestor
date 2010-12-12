@@ -10,6 +10,8 @@ using Owin;
 
 namespace Requestoring {
 
+    // TODO We're going to wait until Owin.Test is done *and* working with Cookie-based sessions
+    //      and then we'll integrate that.
     public class OwinRequestor : IRequestor {
 
         IApplication TheApplication { get; set; }
