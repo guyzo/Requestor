@@ -6,7 +6,12 @@ using Requestoring;
 namespace Requestoring.Specs {
 
     [Subject(typeof(Requestor))]
-    public class Get : Spec {
+    public class Get_http : Spec {
+	Behaves_like<Get_behaviors> get_stuff;
+    }
+
+    [Behaviors]
+    public class Get_behaviors : Spec {
 
 	It can_get_response_body =()=> {
 	    Get("/"        ).Body.ShouldEqual("Hello World");
