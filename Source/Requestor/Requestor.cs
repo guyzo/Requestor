@@ -82,6 +82,8 @@ namespace Requestoring {
                 var url = Url(path) + "?";
                 foreach (var queryString in queryStrings)
                     url += queryString.Key + "=" + HttpUtility.UrlEncode(queryString.Value) + "&";
+		if (url.EndsWith("&"))
+		    url = url.Substring(0, url.Length - 1);
                 return url;
             } else
                 return Url(path);

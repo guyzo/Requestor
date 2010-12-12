@@ -6,7 +6,7 @@ using Requestoring;
 namespace Requestoring.Specs {
 
     [Subject(typeof(Requestor))]
-    public class Get_http : Spec {
+    public class Get_using_HTTP : Spec {
         Behaves_like<Get_behaviors> get_stuff;
     }
 
