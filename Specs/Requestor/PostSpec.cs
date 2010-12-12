@@ -6,7 +6,12 @@ using Requestoring;
 namespace Requestoring.Specs {
 
     [Subject(typeof(Requestor))]
-    public class Post : Spec {
+    public class Post_using_HTTP : Spec {
+	Behaves_like<Post_behaviors> behaviors;
+    }
+
+    [Behaviors]
+    public class Post_behaviors : Spec {
 
 	It can_post =()=> {
 	    Post("/info").Body.ShouldContain("You did: POST /info");

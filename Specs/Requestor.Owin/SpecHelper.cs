@@ -29,9 +29,22 @@ namespace Requestoring.Specs {
 			response.Write("QueryString: {0} = {1}\n", item.Key, item.Value);
 		    foreach (KeyValuePair<string,string> item in request.POST)
 			response.Write("POST Variable: {0} = {1}\n", item.Key, item.Value);
+		    response.Write("POST Variable: {0} = ", request.Body);
 		    foreach (KeyValuePair<string,IEnumerable<string>> header in request.Headers)
-			foreach (string value in header.Value)
-			    response.Write("Header: {0} = {1}\n", header.Key, value);
+			foreach (string value in header.Value) {
+			    // tweak headers to act like Rack's headers
+			    string key = header.Key;
+			    if (key.ToLower().Replace("_","").Replace("-","") == "contenttype")
+				key = "CONTENT_TYPE";
+			    if (key.ToLower().Replace("_","").Replace("-","") == "useragent")
+				key = "HTTP_USER_AGENT";
+			    if (key == "location")     key = "Location";
+			    if (key == "FOO")          key = "HTTP_FOO";
+			    if (key == "BAR")          key = "HTTP_BAR";
+			    if (key == "HI")           key = "HTTP_HI";
+			    if (key == "CUSTOM")       key = "HTTP_CUSTOM";
+			    response.Write("Header: {0} = {1}\n", key, value);
+			}
 		    break;
 		case "/boom":
 		    response.SetStatus(500);
@@ -60,44 +73,3 @@ namespace Requestoring.Specs {
         Establish context = () => Instance = new Requestor(new OwinRequestor(new OwinExampleApplication()));
     }
 }
-
-/*
-use Rack::Session::Cookie
-
-run lambda { |env|
-  request  = Rack::Request.new(env)
-  response = Rack::Response.new
-
-  path = request.path_info.empty? ? '/' : request.path_info
-  verb = request.request_method
-
-  env['rack.session']['timesRequested'] ||= 0
-  env['rack.session']['timesRequested'] +=  1
-
-  case path
-  when '', '/'
-    response.write "Hello World"
-  when '/info'
-    response.headers['Content-Type'] = 'text/plain'
-    response.write "You did: #{verb} #{path}"
-    response.write "\n\n"
-    response.write "Times requested: #{env['rack.session']['timesRequested']}"
-    response.write "\n\n"
-    request.GET.each do |query_string|
-      response.write "QueryString: #{query_string.first} = #{query_string.last}\n"
-    end
-    request.POST.each do |post_variable|
-      response.write "POST Variable: #{post_variable.first} = #{post_variable.last}\n"
-    end
-    response.write "\n"
-    puts env.to_yaml
-    env.each {|key, value| response.write "Header: #{key} = #{value}\n" }
-  else
-    response.write "Not Found: #{verb} #{path}"
-    response.status = 404
-  end
-
-  response.finish
-}
-
-*/

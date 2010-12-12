@@ -6,7 +6,12 @@ using Requestoring;
 namespace Requestoring.Specs {
 
     [Subject(typeof(Requestor))][SetupForEachSpecification]
-    public class SettingHeaders : Spec {
+    public class SettingHeaders_using_HTTP : Spec {
+	Behaves_like<SettingHeaders_behaviors> behaviors;
+    }
+
+    [Behaviors]
+    public class SettingHeaders_behaviors : Spec {
 	Cleanup after_each =()=> DefaultHeaders.Clear();
 
 	It can_set_default_values_for_headers =()=> {

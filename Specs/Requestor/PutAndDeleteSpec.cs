@@ -5,15 +5,28 @@ using Requestoring;
 
 namespace Requestoring.Specs {
 
-    [Subject(typeof(Requestor))][SetupForEachSpecification] // <--- todo Fork MSpec and make them fix this bullshit
-    public class Put : Spec {
+    [Subject(typeof(Requestor))][SetupForEachSpecification] // <--- todo Fork MSpec and make them fix this bullshit!
+    public class Put_using_HTTP : Spec {
+	Behaves_like<Put_behaviors> behaviors;
+    }
+
+    [Subject(typeof(Requestor))][SetupForEachSpecification]
+    public class Delete_using_HTTP : Spec {
+	Behaves_like<Delete_behaviors> behaviors;
+    }
+
+    [Behaviors][SetupForEachSpecification]
+    public class Put_behaviors : Spec {
 	Cleanup after_each =()=>
 	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // reset to default
 
-	It can_put_using_default_put_variable =()=>
+	It can_put_using_default_put_variable =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Put("/info").Body.ShouldContain("POST Variable: X-HTTP-Method-Override = PUT");
+	};
 
 	It can_put_using_default_put_variable_and_post_variables =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Put("/info", new { Foo = "Bar" });
 	    LastResponse.Body.ShouldContain("PUT /");
 	    LastResponse.Body.ShouldContain("POST Variable: X-HTTP-Method-Override = PUT");
@@ -21,6 +34,7 @@ namespace Requestoring.Specs {
 	};
 
 	It can_put_using_custom_put_variable =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Put("/info").Body.ShouldContain("POST Variable: X-HTTP-Method-Override = PUT");
 	    HttpRequestor.MethodVariable = "_method";
 	    Put("/info").Body.ShouldNotContain("POST Variable: X-HTTP-Method-Override = PUT");
@@ -28,21 +42,25 @@ namespace Requestoring.Specs {
 	};
 
 	It can_disable_custom_put_variable =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Put("/info").Body.ShouldContain("POST Variable: X-HTTP-Method-Override =");
 	    HttpRequestor.MethodVariable = null;
 	    Put("/info").Body.ShouldNotContain("POST Variable: X-HTTP-Method-Override =");
 	};
     }
 
-    [Subject(typeof(Requestor))][SetupForEachSpecification]
-    public class Delete : Spec {
+    [Behaviors][SetupForEachSpecification]
+    public class Delete_behaviors : Spec {
 	Cleanup after_each =()=>
 	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // reset to default
 
-	It can_delete_using_default_delete_variable =()=>
+	It can_delete_using_default_delete_variable =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Delete("/info").Body.ShouldContain("POST Variable: X-HTTP-Method-Override = DELETE");
+	};
 
 	It can_delete_using_default_delete_variable_and_post_variables =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Delete("/info", new { Foo = "Bar" });
 	    LastResponse.Body.ShouldContain("DELETE /");
 	    LastResponse.Body.ShouldContain("POST Variable: X-HTTP-Method-Override = DELETE");
@@ -50,6 +68,7 @@ namespace Requestoring.Specs {
 	};
 
 	It can_delete_using_custom_delete_variable =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Delete("/info").Body.ShouldContain("POST Variable: X-HTTP-Method-Override = DELETE");
 	    HttpRequestor.MethodVariable = "_method";
 	    Delete("/info").Body.ShouldNotContain("POST Variable: X-HTTP-Method-Override = DELETE");
@@ -57,6 +76,7 @@ namespace Requestoring.Specs {
 	};
 
 	It can_disable_custom_delete_variable =()=> {
+	    HttpRequestor.MethodVariable = "X-HTTP-Method-Override"; // ...
 	    Delete("/info").Body.ShouldContain("POST Variable: X-HTTP-Method-Override =");
 	    HttpRequestor.MethodVariable = null;
 	    Delete("/info").Body.ShouldNotContain("POST Variable: X-HTTP-Method-Override =");

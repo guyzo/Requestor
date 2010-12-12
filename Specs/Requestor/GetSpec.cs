@@ -7,7 +7,7 @@ namespace Requestoring.Specs {
 
     [Subject(typeof(Requestor))]
     public class Get_using_HTTP : Spec {
-        Behaves_like<Get_behaviors> get_stuff;
+        Behaves_like<Get_behaviors> behaviors;
     }
 
     [Behaviors]
