@@ -1,4 +1,5 @@
 #! /bin/bash
-rm -rf Build
+rm -rf bin
+rm -rf TestResult.xml
 xbuild
-MSPEC_PATH=Tools/mspec.exe Tools/mspec-color.exe Build/Debug/Requestor.Specs.dll
+nunit-color-console -labels "$@" bin/Debug/Requestor.Specs.dll

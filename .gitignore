@@ -5,5 +5,4 @@ bin
 Debug
 XmlDocs
 HtmlDocs
-Build/Release/Machine.Specifications.dll
-Build/Release/Requestor.Specs.*
+TestResult.xml
