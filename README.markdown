@@ -18,7 +18,7 @@ to be able to make my existing Requestor specs run against this new interface by
 Download
 --------
 
-Latest version: 1.0.1.4
+Latest version: 1.0.2.0
 
 [Download .dll][]
 
@@ -375,6 +375,11 @@ own `IRequestor` and use that, instead of the default `HttpRequestor`, for your 
         }
     }
 
+That's all there is to it!
+
+If your tests use cookies, its recommended that your `IRequestor` implement `Requestoring.IHaveCookies`. 
+If you don't, then calls to these Requestor methods won't work: `EnableCookies, DisableCookies, ResetCookies`
+
 ### DSL
 
 If you're writing tests, it creates a lot of noise if you're constantly calling Get(), LastResponse, etc on an instance of Requestor.
@@ -420,5 +425,5 @@ Requestor is released under the MIT license.
 [specs]: http://github.com/remi/Requestor/tree/master/spec
 [psgi]: http://plackperl.org/
 
-[Download .dll]: http://github.com/remi/Requestor/raw/1.0.1.4/Build/Release/Requestor.dll
-[Browse Source]: http://github.com/remi/Requestor/tree/1.0.1.4
+[Download .dll]: http://github.com/remi/Requestor/raw/1.0.2.0/bin/Release/Requestor.dll
+[Browse Source]: http://github.com/remi/Requestor/tree/1.0.2.0
