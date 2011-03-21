@@ -88,6 +88,14 @@ namespace Requestoring.Specs {
 		}
 
 		[Test]
+		public void can_chain_calls_to_AddQueryString() {
+			AddQueryString("Neat", "O").AddQueryString("Foo", "Chained").Get("/info");
+
+			LastResponse.Body.ShouldContain("QueryString: Neat = O");
+			LastResponse.Body.ShouldContain("QueryString: Foo = Chained");
+		}
+
+		[Test]
 		public void can_get_last_response() {
 			var requestor = new Requestor(RootUrl);
 			requestor.LastResponse.Should(Be.Null);
@@ -125,21 +133,29 @@ namespace Requestoring.Specs {
 			LastResponse.Status.ShouldEqual(302);
 			LastResponse.Body.ShouldEqual("Redirecting");
 			LastResponse.Headers["Location"].ShouldEqual("/redirect-twice");
+			CurrentPath.ShouldEqual("/redirect-three-times");
+			CurrentUrl.ShouldEqual("http://localhost:3000/redirect-three-times");
 
 			FollowRedirect();
 			LastResponse.Status.ShouldEqual(301);
 			LastResponse.Body.ShouldEqual("Redirecting");
 			LastResponse.Headers["Location"].ShouldEqual("/redirect");
+			CurrentPath.ShouldEqual("/redirect-twice");
+			CurrentUrl.ShouldEqual("http://localhost:3000/redirect-twice");
 
 			FollowRedirect();
 			LastResponse.Body.ShouldEqual("Redirecting");
 			LastResponse.Headers.Keys.ShouldContain("Location");
 			LastResponse.Headers["Location"].ShouldEqual("/info?redirected=true");
+			CurrentPath.ShouldEqual("/redirect");
+			CurrentUrl.ShouldEqual("http://localhost:3000/redirect");
 
 			FollowRedirect();
 			LastResponse.Status.ShouldEqual(200);
 			LastResponse.Body.ShouldContain("GET /info");
 			LastResponse.Headers.Keys.ShouldNotContain("Location");
+			CurrentPath.ShouldEqual("/info?redirected=true");
+			CurrentUrl.ShouldEqual("http://localhost:3000/info?redirected=true");
 			
 			// Do it automatically
 			AutoRedirect = true;
@@ -148,6 +164,8 @@ namespace Requestoring.Specs {
 			LastResponse.Status.ShouldEqual(200);
 			LastResponse.Body.ShouldContain("GET /info");
 			LastResponse.Headers.Keys.ShouldNotContain("Location");
+			CurrentPath.ShouldEqual("/info?redirected=true");
+			CurrentUrl.ShouldEqual("http://localhost:3000/info?redirected=true");
 		}
 
 		class SimpleRequestor : IRequestor {
@@ -167,7 +185,10 @@ namespace Requestoring.Specs {
 
 			// trying to do a GET to a relative path without a RootUrl will cause an exception
 			var message = "HttpRequestor.GetResponse failed for: GET /foo.  This url generated a System.Net.FileWebRequest instead of a HttpWebRequest.";
-			Should.Throw<Exception>(message, () => requestor.Get("/foo"));
+			var response = requestor.Get("/foo"); // <--- this doesn't raise an exception, but returns null
+			response.Should(Be.Null);
+			requestor.LastException.Should(Be.AssignableFrom(typeof(Exception)));
+			requestor.LastException.Message.ShouldContain(message);
 
 			// if we switch to our SimpleRequestor, tho, we're OK
 			Requestor.Global.Implementation = new SimpleRequestor();

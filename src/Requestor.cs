@@ -8,15 +8,16 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+// TODO - split this up into files!  It's just kept growing and growing ... 
+
 namespace Requestoring {
 
-	/// <summary>
-	/// All Requestors must implement this simple, single method interface
-	/// </summary>
+	/// <summary> /// All Requestors must implement this simple, single method interface /// </summary>
 	public interface IRequestor {
 		IResponse GetResponse(string verb, string url, IDictionary<string, string> postVariables, IDictionary<string, string> requestHeaders);
 	}
 
+	/// <summary>Any Requestor that supports Cookies needs to implement this.</summary>
 	public interface IHaveCookies {
 		void EnableCookies();
 		void DisableCookies();
@@ -37,20 +38,22 @@ namespace Requestoring {
 	}
 
 	public class FakeResponseList : List<FakeResponse>, IRequestor {
-		public void Add(string method, string url, IResponse response) {
+		public FakeResponseList Add(string method, string url, IResponse response) {
 			Add(new FakeResponse {
 				Method   = method,
 				Url      = url,
 				Response = response
 			});
+			return this;
 		}
-		public void Add(int maxTimesToReturn, string method, string url, IResponse response) {
+		public FakeResponseList Add(int times, string method, string url, IResponse response) {
 			Add(new FakeResponse {
 				Method   = method,
 				Url      = url,
 				Response = response,
-				MaxUsage = maxTimesToReturn
+				MaxUsage = times
 			});
+			return this;
 		}
 
 		// This is a safe way to get a fake response.  It does NOT increment TimesUsed
@@ -88,25 +91,26 @@ namespace Requestoring {
 			public IDictionary<string,string> DefaultHeaders = new Dictionary<string,string>();
 
 			// Faking responses ... copy/pasted from Requestor ... TODO DRY this up!
-			public void EnableRealRequests()  { AllowRealRequests = true;  }
-			public void DisableRealRequests() { AllowRealRequests = false; }
+			public GlobalConfiguration EnableRealRequests()  { AllowRealRequests = true;  return this; }
+			public GlobalConfiguration DisableRealRequests() { AllowRealRequests = false; return this; }
 			public FakeResponseList FakeResponses = new FakeResponseList();
-			public void FakeResponse(string method, string url, IResponse response) {
-				FakeResponses.Add(method, url, response);
+			public GlobalConfiguration FakeResponse(string method, string url, IResponse response) {
+				FakeResponses.Add(method, url, response); return this;
 			}
-			public void FakeResponse(int times, string method, string url, IResponse response) {
-				FakeResponses.Add(times, method, url, response);
+			public GlobalConfiguration FakeResponse(int times, string method, string url, IResponse response) {
+				FakeResponses.Add(times, method, url, response); return this;
 			}
-			public void FakeResponseOnce(string method, string url, IResponse response) {
-				FakeResponse(1, method, url, response);
+			public GlobalConfiguration FakeResponseOnce(string method, string url, IResponse response) {
+				FakeResponse(1, method, url, response); return this;
 			}
 
 			public string RootUrl;
 
-			public void Reset() {
+			public GlobalConfiguration Reset() {
 				FakeResponses.Clear();
 				DefaultHeaders.Clear();
 				Implementation = null;
+				return this;
 			}
 
 			IRequestor _implementation;
@@ -170,17 +174,17 @@ namespace Requestoring {
 		}
 
 		// Faking responses
-		public void DisableRealRequests() { AllowRealRequests = false; }
-		public void EnableRealRequests()  { AllowRealRequests = true;  }
+		public Requestor DisableRealRequests() { AllowRealRequests = false; return this; }
+		public Requestor EnableRealRequests()  { AllowRealRequests = true;  return this; }
 		public FakeResponseList FakeResponses = new FakeResponseList();
-		public void FakeResponse(string method, string url, IResponse response) {
-			FakeResponses.Add(method, url, response);
+		public Requestor FakeResponse(string method, string url, IResponse response) {
+			FakeResponses.Add(method, url, response); return this;
 		}
-		public void FakeResponse(int times, string method, string url, IResponse response) {
-			FakeResponses.Add(times, method, url, response);
+		public Requestor FakeResponse(int times, string method, string url, IResponse response) {
+			FakeResponses.Add(times, method, url, response); return this;
 		}
-		public void FakeResponseOnce(string method, string url, IResponse response) {
-			FakeResponse(1, method, url, response);
+		public Requestor FakeResponseOnce(string method, string url, IResponse response) {
+			FakeResponse(1, method, url, response); return this;
 		}
 
 		public IDictionary<string,string> DefaultHeaders = new Dictionary<string,string>();
@@ -200,6 +204,10 @@ namespace Requestoring {
 			set { _implementation = value; }
 		}
 
+		public Uri CurrentUri { get; set; }
+		public string CurrentUrl  { get { return (CurrentUri == null) ? null : CurrentUri.ToString();   } }
+		public string CurrentPath { get { return (CurrentUri == null) ? null : CurrentUri.PathAndQuery; } }
+
 		public string Url(string path) {
 			if (IsAbsoluteUrl(path))
 				return path;
@@ -215,6 +223,7 @@ namespace Requestoring {
 				var url = Url(path) + "?";
 				foreach (var queryString in queryStrings)
 					url += queryString.Key + "=" + HttpUtility.UrlEncode(queryString.Value) + "&";
+                url.TrimEnd('&');
 				return url;
 			} else
 				return Url(path);
@@ -254,7 +263,29 @@ namespace Requestoring {
 				throw new RealRequestsDisabledException(string.Format("Real requests are disabled. {0} {1}", method, Url(path, info.QueryStrings)));
 		}
 		public IResponse Request(string method, string path, RequestInfo info, IRequestor requestor) {
-			var response = requestor.GetResponse(method, Url(path, info.QueryStrings), info.PostData, MergeWithDefaultHeaders(info.Headers));
+			var url = Url(path, info.QueryStrings);
+			
+			try {
+				CurrentUri = new Uri(url);
+			} catch (Exception ex) {
+				Console.WriteLine("BAD URI.  method:{0} path:{1} url:{2}", method, path, url);
+				LastException = ex;
+				// We don't return null here because a custom IRequestor could support this URL, even if it's not a valid URI
+			}
+
+            IResponse response;
+
+            try {
+                response = requestor.GetResponse(method, url, info.PostData, MergeWithDefaultHeaders(info.Headers));
+            } catch (Exception ex) {
+                Console.WriteLine("Requestor ({0}) failed to respond for {1} {2} [{3}]", requestor.GetType(), method, path, url);
+                Console.WriteLine("Requested info:");
+				Console.WriteLine("\t{0} {1}", method, url);
+                Console.WriteLine("\tPostData: " + string.Join(", ", info.PostData.Select(item => string.Format("{0} => {1}", item.Key, item.Value)).ToArray()));
+                Console.WriteLine("\tHeaders:  " + string.Join(", ", info.Headers.Select(item => string.Format("{0} => {1}", item.Key, item.Value)).ToArray()));
+				LastException = ex;
+                return null;
+            }
 
 			if (response == null)
 				return null;
@@ -272,6 +303,8 @@ namespace Requestoring {
 			set { _lastResponse = value; }
 		}
 
+		public Exception LastException { get; set; }
+
 		public bool IsRedirect(IResponse response) {
 			return (response.Status.ToString().StartsWith("3") && response.Headers.Keys.Contains("Location"));
 		}
@@ -285,57 +318,68 @@ namespace Requestoring {
 				throw new Exception("Cannot follow redirect.  response is null.");
 			else if (!response.Headers.Keys.Contains("Location"))
 				throw new Exception("Cannot follow redirect.  Location header of response is null.");
-			else 
+			else {
+                PostData.Clear(); // You cannot have PostData when doing a GET
 				return Get(response.Headers["Location"]);
+            }
 		}
 
-		public void EnableCookies() {
+		public Requestor EnableCookies() {
 			if (Implementation is IHaveCookies)
 				(Implementation as IHaveCookies).EnableCookies();
 			else
 				throw new Exception(string.Format("Cannot enable cookies.  Requestor Implementation {0} does not implement IHaveCookies", Implementation));
+			return this;
 		}
 
-		public void DisableCookies() {
+		public Requestor DisableCookies() {
 			if (Implementation is IHaveCookies)
 				(Implementation as IHaveCookies).DisableCookies();
 			else
 				throw new Exception(string.Format("Cannot disable cookies.  Requestor Implementation {0} does not implement IHaveCookies", Implementation));
+			return this;
 		}
 
-		public void ResetCookies() {
+		public Requestor ResetCookies() {
 			if (Implementation is IHaveCookies)
 				(Implementation as IHaveCookies).ResetCookies();
 			else
 				throw new Exception(string.Format("Cannot reset cookies.  Requestor Implementation {0} does not implement IHaveCookies", Implementation));
+			return this;
 		}
 
-		public void Reset() {
+		public Requestor Reset() {
 			Implementation = null;
 			ResetLastResponse();
 			DefaultHeaders.Clear();
 			FakeResponses.Clear();
+			return this;
 		}
 
-		public void ResetLastResponse() {
+		public Requestor ResetLastResponse() {
 			LastResponse = null;
+			return this;
 		}
 
-		public void AddHeader(string key, string value) {
+		public Requestor AddHeader(string key, string value) {
 			Headers.Add(key, value);
+			return this;
 		}
 
-		public void AddQueryString(string key, string value) {
+		public Requestor AddQueryString(string key, string value) {
 			QueryStrings.Add(key, value);
+			return this;
 		}
 
-		public void AddPostData(string key, string value) {
+		public Requestor AddPostData(string key, string value) {
 			PostData.Add(key, value);
+			return this;
 		}
 
-		public void SetPostData(string value) {
+		public Requestor SetPostData(string value) {
 			PostData.Clear();
 			PostData.Add(value, null);
+			return this;
 		}
 		#endregion
 
@@ -355,7 +399,7 @@ namespace Requestoring {
 			return result;
 		}
 
-		internal IResponse SetLastResponse(IResponse response) {
+		public IResponse SetLastResponse(IResponse response) {
 			// clear out the stored headers, querystrings, and post data for this request
 			Headers      = new Dictionary<string,string>();
 			QueryStrings = new Dictionary<string,string>();
@@ -365,7 +409,7 @@ namespace Requestoring {
 			return response;
 		}
 
-		internal static IDictionary<string, string> ToStringDictionary(object anonymousType) {
+		public static IDictionary<string, string> ToStringDictionary(object anonymousType) {
 			if (anonymousType is Dictionary<string, string>)
 				return anonymousType as Dictionary<string, string>;
 
@@ -378,7 +422,7 @@ namespace Requestoring {
 			return dict;
 		}
 
-		internal static IDictionary<string, object> ToObjectDictionary(object anonymousType) {
+		public static IDictionary<string, object> ToObjectDictionary(object anonymousType) {
 			if (anonymousType is Dictionary<string, object>)
 				return anonymousType as Dictionary<string, object>;
 

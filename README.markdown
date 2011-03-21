@@ -18,7 +18,7 @@ to be able to make my existing Requestor specs run against this new interface by
 Download
 --------
 
-Latest version: 1.0.2.0
+Latest version: 1.0.2.1
 
 [Download .dll][]
 
@@ -271,13 +271,27 @@ your response will be used for *all* Requestor instances.
 `FakeResponse` can take any `Requestoring.IResponse`.  If you use a `new Response()` (our default implementaiton), it has useful defaults 
 so you don't have to specify Status and Body and Headers if you don't want to
 
-    Requestor.Global.FakeResponse("http://www.google.com", new Response());
+    Requestor.Global.FakeResponse("GET", "http://www.google.com", new Response());
 
     var response = myRequestor.Get("http://www.google.com");
     
     // response.Status  will be 200
     // response.Body    will be ""
     // response.Headers will be an empty Dictionary<string,string>
+
+#### Loading saved responses
+
+An easy way to record HTTP responses and then use them as fake responses in Requestor is to use curl:
+
+    $ curl -i http://google.com/ > google_home_page
+
+This saves the Status, Headers, and Body of the request.
+
+You can easily load this file into a Response with `Response.FromHttpResponse`:
+
+    Requestor.Global.FakeResponse("GET", "http://www.google.com/", Response.FromHttpResponse(ReadFile("google_home_page")));
+
+    new Requestor().Get("http://www.google.com/"); // gives you the full response, including headers
 
 #### Limiting the number of times your response will be used
 
@@ -286,7 +300,7 @@ If you want to make sure that your fake response is only used once (or N number 
     >> myRequestor.Get("/");
     => "Hello from the real web site"
 
-    >> myRequestor.FakeResponseOnce("http://www.google.com/", new Response("Faked!"));
+    >> myRequestor.FakeResponseOnce("GET", "http://www.google.com/", new Response("Faked!"));
 
     >> myRequestor.Get("/").Body
     >> "Faked!"
@@ -431,5 +445,5 @@ Requestor is released under the MIT license.
 [specs]: http://github.com/remi/Requestor/tree/master/spec
 [psgi]: http://plackperl.org/
 
-[Download .dll]: http://github.com/remi/Requestor/raw/1.0.2.0/bin/Release/Requestor.dll
-[Browse Source]: http://github.com/remi/Requestor/tree/1.0.2.0
+[Download .dll]: http://github.com/remi/Requestor/raw/1.0.2.1/bin/Release/Requestor.dll
+[Browse Source]: http://github.com/remi/Requestor/tree/1.0.2.1
