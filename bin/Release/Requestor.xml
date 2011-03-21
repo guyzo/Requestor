@@ -16,9 +16,10 @@
             </remarks>
         </member>
         <member name="T:Requestoring.IRequestor">
-            <summary>
-            All Requestors must implement this simple, single method interface
-            </summary>
+            <summary> /// All Requestors must implement this simple, single method interface /// </summary>
+        </member>
+        <member name="T:Requestoring.IHaveCookies">
+            <summary>Any Requestor that supports Cookies needs to implement this.</summary>
         </member>
         <member name="T:Requestoring.Requestor">
             <summary>
