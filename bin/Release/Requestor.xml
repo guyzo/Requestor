@@ -26,6 +26,9 @@
                 <c>Requestor</c> has the main API for making requests.  Uses a <c>IRequestor</c> implementation behind the scenes.
             </summary>
         </member>
+        <member name="M:Requestoring.Requestor.Request(System.String,System.String,Requestoring.Requestor.RequestInfo)">
+            <summary>This is THE Request methd that all other ones use.  It will process fake and real requests.</summary>
+        </member>
         <member name="T:Requestoring.IResponse">
             <summary>
             Represents a simple HTTP response
